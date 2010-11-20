@@ -1,0 +1,77 @@
+# Ghalib Suleiman
+# Word Sense Disambiguation using Naive Bayes
+# Code sample for Basis
+
+ABOUT:
+
+Packaged with this readme is a word-sense disambiguator using Naive
+Bayes classification, written in Python.  The dataset used for evaluation is the
+English lexical sample from the SENSEVAL-3 workshop
+(http://www.senseval.org/senseval3/workshop.html).  It is a mix of
+ambiguous nouns, verbs, and adjectives (an average of 6.47 senses per
+word).  The scorer used is also from SENSEVAL-3.
+
+Tested on Python 2.5.2, GCC 4.2.1, Apple Mac OS X 10.6.2.
+
+
+USAGE:
+
+1) Compile the scorer by running 'make'.
+2) Run the classifier with ./wsd.py
+
+It will process the training set and then classify the testing test,
+by default storing the results in the file 'results'.
+The scorer is then run, comparing results to the answer key in the
+file EnglishLS.test.key.
+
+
+APPROACH:
+
+The first thing done before the actual implementation was converting
+the datasets from XML into a more straightforward text-delimeter-text
+format.  This was done using the script orig_data/tidy.py (which in
+turn utilises the external Python library BeautifulSoup).
+
+The post-processed sets are in the files EnglishLS.gtrain and
+EnglishLS.gtest.
+
+As mentioned previously, the classifier is a Naive Bayes classifier.
+It assumes a 'bag of words' model, where we assume that our feature
+context words are conditionally independent.
+While acknowledging that this is the most naive implementation
+possible, there was still some room for experimentation:
+
+- P(feature_word | sense) was estimated using MLE (Maximum-Likelihood
+  Estimation).  It was complemented with smoothing in the form of
+  straightforward add-lambda smoothing.  Experimenting with various
+  values in the range [0,1], it was found that lambda=0.5 provided the
+  best precision.
+
+- Different context windows (the number of words on either side of the
+  ambiguous word) were considered, however the final window settled on
+  was to grab all words on either side, as that did not cause a
+  significant performance impact while at the same time improving
+  precision.
+
+- There is no stoplist filtering, as that was found to decrease
+  precision.
+
+
+RESULTS and ANALYSIS:
+
+47 systems were evaluated on this dataset as part of SENSEVAL-3.
+Their precision ranged from 19.7% to 72.9% (most achieving above 60%).
+My implementation, being as naive as it is, scored 49%.
+
+No single word was a 'worst-performer', however a general trend
+noticed was that the greater the number of senses a word has, the
+worse the disambiguation results on that word's instances. Some words
+in the corpus had up to 12 different senses (e.g. the adjective
+'talk'.)
+
+An attempt was made at removing any smoothing altogether, however this
+resulted in a very significant drop in precision.  Examination of the
+testing set yielded the explanation: many of the ambiguous words are
+surrounded by low-frequency context feature words.
+
+
